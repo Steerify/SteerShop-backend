@@ -1,0 +1,52 @@
+import express, { Application } from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import { config } from './config/env';
+import { generalLimiter } from './middlewares/rateLimiter';
+import { errorHandler, notFoundHandler } from './middlewares/errorHandler';
+import routes from './routes';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './config/swagger';
+
+const app: Application = express();
+
+// Security middleware
+app.use(helmet());
+app.use(cors({
+  origin: config.cors.origins,
+  credentials: true,
+}));
+
+// Body parsing middleware
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Rate limiting
+app.use(generalLimiter);
+
+// API routes
+app.use('/api/v1', routes);
+
+// Swagger Documentation (available at both root and versioned paths)
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/api/v1/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/api/v1/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// Root endpoint
+app.get('/', (_req, res) => {
+  res.json({
+    success: true,
+    message: 'Welcome to SteerSolo API',
+    version: '1.0.0',
+    documentation: '/api/v1/docs',
+  });
+});
+
+// 404 handler
+app.use(notFoundHandler);
+
+// Error handler (must be last)
+app.use(errorHandler);
+
+export default app;
