@@ -8,6 +8,7 @@ import {
   forgotPasswordSchema,
   resetPasswordSchema,
   verifyEmailSchema,
+  googleLoginSchema,
 } from './auth.validation';
 
 const router = Router();
@@ -21,5 +22,6 @@ router.post('/logout', authController.logout);
 router.post('/forgot-password', validate(forgotPasswordSchema), authController.forgotPassword);
 router.post('/reset-password', validate(resetPasswordSchema), authController.resetPassword);
 router.post('/verify-email', validate(verifyEmailSchema), authController.verifyEmail);
+router.post('/google', validate(googleLoginSchema), authController.googleLogin);
 
 export default router;

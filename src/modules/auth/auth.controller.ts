@@ -69,4 +69,13 @@ export class AuthController {
       return next(error);
     }
   }
+
+  async googleLogin(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await authService.googleLogin(req.body);
+      return successResponse(res, result, 'Google login successful');
+    } catch (error) {
+      return next(error);
+    }
+  }
 }

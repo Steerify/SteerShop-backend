@@ -1,17 +1,22 @@
-import { Role } from '../../types';
+import { User, Prisma, Role } from '@prisma/client';
 import { prisma } from '../../config/database';
 import { hashPassword, comparePassword, generateSecureToken } from '../../utils/password';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../../utils/jwt';
 import { AppError, UnauthorizedError } from '../../middlewares/errorHandler';
+import { GoogleAuthService } from './google-auth.service';
 import {
   SignupInput,
   LoginInput,
   RefreshTokenInput,
   ForgotPasswordInput,
   ResetPasswordInput,
+  GoogleLoginInput,
 } from './auth.validation';
 
 export class AuthService {
+  // Service for authentication and token management
+  private googleAuthService = new GoogleAuthService();
+
   async signup(data: SignupInput) {
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -105,6 +110,10 @@ export class AuthService {
     }
 
     // Verify password
+    if (!user.password) {
+      throw new UnauthorizedError('This account was created with Google. Please use Google to login.');
+    }
+
     const isPasswordValid = await comparePassword(data.password, user.password);
 
     if (!isPasswordValid) {
@@ -152,16 +161,25 @@ export class AuthService {
   }
 
   async refresh(data: RefreshTokenInput) {
+    // Normalize token
+    const token = data.refreshToken.replace(/^Bearer\s+/i, '').trim();
+
     // Verify token
-    /* const _payload = */ verifyRefreshToken(data.refreshToken);
+    try {
+      verifyRefreshToken(token);
+    } catch (error: any) {
+      console.error(`[AuthService] Refresh token verification failed: ${error.message}`);
+      throw new UnauthorizedError(error.message);
+    }
 
     // Check if token exists in database
     const storedToken = await prisma.refreshToken.findUnique({
-      where: { token: data.refreshToken },
+      where: { token: token },
       include: { user: true },
     });
 
     if (!storedToken) {
+      console.warn(`[AuthService] Refresh token not found in database: ${token.substring(0, 10)}...`);
       throw new UnauthorizedError('Invalid refresh token');
     }
 
@@ -299,5 +317,106 @@ export class AuthService {
     // This would involve storing verification tokens similar to password reset
     // For now, we'll just return a placeholder
     throw new AppError('Email verification not yet implemented', 501);
+  }
+
+  async googleLogin(data: GoogleLoginInput) {
+    const payload = await this.googleAuthService.verifyIdToken(data.idToken);
+
+    const { sub: googleId, email, name, picture } = payload;
+
+    if (!email) {
+      throw new AppError('Google account must have an email', 400);
+    }
+
+    // Find or create user logic wrapped in a typed function or executed inline
+    // to ensure type inference works correctly with includes
+    const user = await (async (): Promise<User & { profile: any }> => {
+      const existingUser = await prisma.user.findFirst({
+        where: {
+          OR: [
+            { googleId },
+            { email }
+          ]
+        } as Prisma.UserWhereInput,
+        include: { profile: true },
+      });
+
+      if (!existingUser) {
+        // Create new user
+        return prisma.user.create({
+          data: {
+            email,
+            googleId,
+            provider: 'google',
+            isVerified: true, // Google emails are already verified
+            role: Role.CUSTOMER,
+            profile: {
+              create: {
+                firstName: name?.split(' ')[0] || 'User',
+                lastName: name?.split(' ').slice(1).join(' ') || '',
+                avatar: picture,
+              },
+            },
+          } as unknown as Prisma.UserCreateInput,
+          include: { profile: true },
+        });
+      }
+
+      if (!(existingUser as any).googleId) {
+        // Link Google account to existing local user
+        return prisma.user.update({
+          where: { id: existingUser.id },
+          data: {
+            googleId,
+            provider: 'google',
+            isVerified: true,
+          } as unknown as Prisma.UserUpdateInput,
+          include: { profile: true },
+        });
+      }
+
+      return existingUser;
+    })();
+
+    if (!user.isActive) {
+      throw new UnauthorizedError('Account is deactivated');
+    }
+
+    // Generate tokens
+    const accessToken = generateAccessToken({
+      id: user.id,
+      email: user.email,
+      role: user.role as any,
+    });
+
+    const refreshToken = generateRefreshToken({
+      id: user.id,
+      email: user.email,
+      role: user.role as any,
+    });
+
+    // Store refresh token
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7);
+
+    await prisma.refreshToken.create({
+      data: {
+        token: refreshToken,
+        userId: user.id,
+        expiresAt,
+      },
+    });
+
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        name: `${(user as any).profile?.firstName || ''} ${(user as any).profile?.lastName || ''}`.trim(),
+        avatar: (user as any).profile?.avatar,
+        role: user.role,
+      },
+      accessToken,
+      refreshToken,
+    };
   }
 }

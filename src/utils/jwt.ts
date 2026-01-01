@@ -17,6 +17,7 @@ export const generateAccessToken = (user: AuthUser): string => {
 
   return jwt.sign(payload, config.jwt.accessSecret as jwt.Secret, {
     expiresIn: config.jwt.accessExpiry as any,
+    algorithm: 'HS256',
   });
 };
 
@@ -29,21 +30,33 @@ export const generateRefreshToken = (user: AuthUser): string => {
 
   return jwt.sign(payload, config.jwt.refreshSecret as jwt.Secret, {
     expiresIn: config.jwt.refreshExpiry as any,
+    algorithm: 'HS256',
   });
 };
 
 export const verifyAccessToken = (token: string): TokenPayload => {
   try {
-    return jwt.verify(token, config.jwt.accessSecret) as TokenPayload;
-  } catch (error) {
-    throw new Error('Invalid or expired access token');
+    return jwt.verify(token, config.jwt.accessSecret, {
+      algorithms: ['HS256'],
+    }) as TokenPayload;
+  } catch (error: any) {
+    if (error.name === 'TokenExpiredError') {
+      throw new Error('Access token has expired');
+    }
+    throw new Error('Invalid access token');
   }
 };
 
 export const verifyRefreshToken = (token: string): TokenPayload => {
   try {
-    return jwt.verify(token, config.jwt.refreshSecret) as TokenPayload;
-  } catch (error) {
+    return jwt.verify(token, config.jwt.refreshSecret, {
+      algorithms: ['HS256'],
+    }) as TokenPayload;
+  } catch (error: any) {
+    console.error(`[JWT] Refresh token verification failed: ${error.name} - ${error.message}`);
+    if (error.name === 'TokenExpiredError') {
+      throw new Error('Refresh token has expired');
+    }
     throw new Error('Invalid or expired refresh token');
   }
 };

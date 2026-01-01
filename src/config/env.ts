@@ -14,6 +14,8 @@ const envSchema = z.object({
   PAYSTACK_SECRET_KEY: z.string().min(1, 'Paystack secret key is required'),
   PAYSTACK_PUBLIC_KEY: z.string().min(1, 'Paystack public key is required'),
   CORS_ORIGIN: z.string().default('http://localhost:3000'),
+  GOOGLE_CLIENT_ID: z.string().min(1, 'Google Client ID is required'),
+  GOOGLE_CLIENT_SECRET: z.string().min(1, 'Google Client Secret is required'),
 });
 
 const parseEnv = () => {
@@ -53,5 +55,9 @@ export const config = {
   },
   cors: {
     origins: env.CORS_ORIGIN.split(',').map((origin) => origin.trim()),
+  },
+  google: {
+    clientId: env.GOOGLE_CLIENT_ID,
+    clientSecret: env.GOOGLE_CLIENT_SECRET,
   },
 };
