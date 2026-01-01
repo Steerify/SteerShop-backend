@@ -54,7 +54,9 @@ enum FeedbackStatus {
 model User {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   email     String   @unique
-  password  String
+  password  String?
+  googleId  String?  @unique
+  provider  String   @default("local")
   role      Role     @default(CUSTOMER)
   isVerified Boolean @default(false)
   isActive  Boolean  @default(true)

@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { AuthController } from './auth.controller';
 import { validate } from '../../middlewares/validation';
-import { authLimiter } from '../../middlewares/rateLimiter';
 import {
   signupSchema,
   loginSchema,
@@ -14,8 +13,6 @@ import {
 const router = Router();
 const authController = new AuthController();
 
-// Apply rate limiting to all auth routes
-router.use(authLimiter);
 
 router.post('/signup', validate(signupSchema), authController.signup);
 router.post('/login', validate(loginSchema), authController.login);

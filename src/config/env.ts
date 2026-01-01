@@ -14,8 +14,6 @@ const envSchema = z.object({
   PAYSTACK_SECRET_KEY: z.string().min(1, 'Paystack secret key is required'),
   PAYSTACK_PUBLIC_KEY: z.string().min(1, 'Paystack public key is required'),
   CORS_ORIGIN: z.string().default('http://localhost:3000'),
-  RATE_LIMIT_WINDOW_MS: z.string().default('900000'),
-  RATE_LIMIT_MAX_REQUESTS: z.string().default('100'),
 });
 
 const parseEnv = () => {
@@ -55,9 +53,5 @@ export const config = {
   },
   cors: {
     origins: env.CORS_ORIGIN.split(',').map((origin) => origin.trim()),
-  },
-  rateLimit: {
-    windowMs: parseInt(env.RATE_LIMIT_WINDOW_MS, 10),
-    maxRequests: parseInt(env.RATE_LIMIT_MAX_REQUESTS, 10),
   },
 };
