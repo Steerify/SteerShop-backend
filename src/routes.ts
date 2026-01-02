@@ -11,6 +11,7 @@ import offerRoutes from './modules/offers/offer.route';
 import courseRoutes from './modules/courses/course.route';
 import rewardRoutes from './modules/rewards/reward.route';
 import feedbackRoutes from './modules/feedback/feedback.route';
+import onboardingRoutes from './modules/onboarding/onboarding.route';
 
 const router = Router();
 
@@ -35,6 +36,7 @@ router.use('/offers', offerRoutes);
 router.use('/courses', courseRoutes);
 router.use('/rewards', rewardRoutes);
 router.use('/feedback', feedbackRoutes);
+router.use('/onboarding', onboardingRoutes);
 
 // Health check
 router.get('/health', (_req, res) => {
