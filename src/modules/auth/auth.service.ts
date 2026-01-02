@@ -1,4 +1,4 @@
-import { User, Prisma, Role } from '@prisma/client';
+import { User, Role } from '@prisma/client';
 import { prisma } from '../../config/database';
 import { hashPassword, comparePassword, generateSecureToken } from '../../utils/password';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../../utils/jwt';
@@ -337,7 +337,7 @@ export class AuthService {
             { googleId },
             { email }
           ]
-        } as Prisma.UserWhereInput,
+        },
         include: { profile: true },
       });
 
@@ -357,12 +357,12 @@ export class AuthService {
                 avatar: picture,
               },
             },
-          } as unknown as Prisma.UserCreateInput,
+          },
           include: { profile: true },
         });
       }
 
-      if (!(existingUser as any).googleId) {
+      if (!existingUser.googleId) {
         // Link Google account to existing local user
         return prisma.user.update({
           where: { id: existingUser.id },
@@ -370,7 +370,7 @@ export class AuthService {
             googleId,
             provider: 'google',
             isVerified: true,
-          } as unknown as Prisma.UserUpdateInput,
+          },
           include: { profile: true },
         });
       }

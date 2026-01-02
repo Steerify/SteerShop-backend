@@ -10,7 +10,19 @@ import { swaggerSpec } from './config/swagger';
 const app: Application = express();
 
 // Security middleware
-app.use(helmet());
+app.use(helmet({
+  crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  contentSecurityPolicy: {
+    directives: {
+      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+      "script-src": ["'self'", "https://accounts.google.com", "https://apis.google.com"],
+      "frame-src": ["'self'", "https://accounts.google.com"],
+      "connect-src": ["'self'", "https://accounts.google.com"],
+      "img-src": ["'self'", "data:", "https://lh3.googleusercontent.com"], // Allow Google user avatars
+    },
+  },
+}));
 app.use(cors({
   origin: config.cors.origins,
   credentials: true,
