@@ -70,10 +70,19 @@ export class AuthController {
     }
   }
 
+  async googleSignup(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await authService.googleSignup(req.body);
+      return successResponse(res, result, 'Account created successfully', 201);
+    } catch (error) {
+      return next(error);
+    }
+  }
+
   async googleLogin(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await authService.googleLogin(req.body);
-      return successResponse(res, result, 'Google login successful');
+      return successResponse(res, result, 'Login successful');
     } catch (error) {
       return next(error);
     }
