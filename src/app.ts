@@ -19,7 +19,7 @@ app.use(helmet({
       "script-src": ["'self'", "https://accounts.google.com", "https://apis.google.com"],
       "frame-src": ["'self'", "https://accounts.google.com"],
       "connect-src": ["'self'", "https://accounts.google.com"],
-      "img-src": ["'self'", "data:", "https://lh3.googleusercontent.com"], // Allow Google user avatars
+      "img-src": ["'self'", "data:", "https://res.cloudinary.com", "https://*.googleusercontent.com", "https://storage.googleapis.com"],
     },
   },
 }));
