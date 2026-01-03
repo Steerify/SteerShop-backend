@@ -25,7 +25,7 @@ const upload = multer({
 });
 
 router.post('/', authenticate, (req: Request, res: Response, next: NextFunction) => {
-  upload.single('file')(req, res, async (err: any) => {
+  upload.single('image')(req, res, async (err: any) => {
     try {
       if (err instanceof multer.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') {
