@@ -139,7 +139,7 @@ model OnboardingResponse {
 
 model Shop {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  ownerId     String   @unique @db.ObjectId
+  ownerId     String?  @unique @db.ObjectId
   name        String
   slug        String   @unique
   description String?
@@ -154,7 +154,7 @@ model Shop {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  owner        User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner        User?         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   products     Product[]
   orders       Order[]
   subscription Subscription?
@@ -164,7 +164,7 @@ model Shop {
 
 model Subscription {
   id        String             @id @default(auto()) @map("_id") @db.ObjectId
-  shopId    String             @unique @db.ObjectId
+  shopId    String?            @unique @db.ObjectId
   status    SubscriptionStatus @default(TRIAL)
   trialEndsAt DateTime?
   currentPeriodStart DateTime @default(now())
@@ -173,7 +173,7 @@ model Subscription {
   createdAt DateTime           @default(now())
   updatedAt DateTime           @updatedAt
 
-  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shop Shop? @relation(fields: [shopId], references: [id], onDelete: Cascade)
 
   @@index([status])
 }
@@ -196,7 +196,7 @@ model Category {
 
 model Product {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  shopId      String   @db.ObjectId
+  shopId      String?  @db.ObjectId
   categoryId  String?  @db.ObjectId
   name        String
   slug        String
@@ -208,7 +208,7 @@ model Product {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  shop      Shop           @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shop      Shop?          @relation(fields: [shopId], references: [id], onDelete: Cascade)
   category  Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   images    ProductImage[]
   orderItems OrderItem[]
@@ -241,7 +241,7 @@ model ProductImage {
 model Order {
   id              String      @id @default(auto()) @map("_id") @db.ObjectId
   orderNumber     String      @unique
-  customerId      String      @db.ObjectId
+  customerId      String?     @db.ObjectId
   shopId          String      @db.ObjectId
   status          OrderStatus @default(PENDING)
   subtotal        Int         // Amount in kobo
@@ -257,7 +257,7 @@ model Order {
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
-  customer User        @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customer User?       @relation(fields: [customerId], references: [id], onDelete: Cascade)
   shop     Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
   items    OrderItem[]
   payment  Payment?

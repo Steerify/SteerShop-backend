@@ -42,7 +42,7 @@ export class PaymentService {
       method: 'POST',
       headers: paystackHeaders,
       body: JSON.stringify({
-        email: order.customer.email,
+        email: order.customer?.email || order.customerEmail,
         amount: order.total, // Amount in kobo
         reference,
         metadata: {

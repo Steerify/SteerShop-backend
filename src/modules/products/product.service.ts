@@ -185,7 +185,7 @@ export class ProductService {
       throw new NotFoundError('Product not found');
     }
 
-    if (product.shop.ownerId !== userId && userRole !== 'ADMIN') {
+    if (product.shop?.ownerId !== userId && userRole !== 'ADMIN') {
       throw new ForbiddenError('You do not have permission to update this product');
     }
 
@@ -219,7 +219,7 @@ export class ProductService {
       throw new NotFoundError('Product not found');
     }
 
-    if (product.shop.ownerId !== userId && userRole !== 'ADMIN') {
+    if (product.shop?.ownerId !== userId && userRole !== 'ADMIN') {
       throw new ForbiddenError('You do not have permission to delete this product');
     }
 
