@@ -26,6 +26,11 @@ export const updateProductSchema = z.object({
     price: z.number().int().positive().optional(),
     comparePrice: z.number().int().positive().optional(),
     inventory: z.number().int().min(0).optional(),
+    images: z.array(z.object({
+      url: z.string().url(),
+      alt: z.string().optional(),
+      position: z.number().int().min(0).default(0),
+    })).optional(),
     isActive: z.boolean().optional(),
   }),
 });

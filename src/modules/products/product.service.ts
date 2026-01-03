@@ -189,9 +189,17 @@ export class ProductService {
       throw new ForbiddenError('You do not have permission to update this product');
     }
 
+    const { images, ...productData } = data;
+
     const updatedProduct = await prisma.product.update({
       where: { id: productId },
-      data,
+      data: {
+        ...productData,
+        images: images ? {
+          deleteMany: {},
+          create: images,
+        } : undefined,
+      },
       include: {
         images: true,
         category: true,

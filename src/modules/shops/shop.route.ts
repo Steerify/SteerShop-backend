@@ -14,7 +14,7 @@ router.get('/:slug', shopController.getShopBySlug);
 
 // Protected routes
 router.post('/', authenticate, requireEntrepreneur, validate(createShopSchema), shopController.createShop);
-router.put('/:id', authenticate, validate(updateShopSchema), shopController.updateShop);
+router.patch('/:id', authenticate, validate(updateShopSchema), shopController.updateShop);
 router.delete('/:id', authenticate, shopController.deleteShop);
 
 // Admin only routes

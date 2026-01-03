@@ -19,19 +19,32 @@ router.get('/', async (_req, res, next) => {
   }
 });
 
-// Admin routes
-router.post('/', authenticate, requireAdmin, async (req, res, next) => {
+// Admin routes for prizes
+router.post('/prizes', authenticate, requireAdmin, async (req, res, next) => {
   try {
-    const reward = await prisma.reward.create({ data: req.body });
+    const { image_url, ...rewardData } = req.body;
+    const reward = await prisma.reward.create({ 
+      data: {
+        ...rewardData,
+        image_url
+      } 
+    });
     return successResponse(res, reward, 'Reward created successfully', 201);
   } catch (error) {
     return next(error);
   }
 });
 
-router.put('/:id', authenticate, requireAdmin, async (req, res, next) => {
+router.patch('/prizes/:id', authenticate, requireAdmin, async (req, res, next) => {
   try {
-    const reward = await prisma.reward.update({ where: { id: req.params.id }, data: req.body });
+    const { image_url, ...rewardData } = req.body;
+    const reward = await prisma.reward.update({ 
+      where: { id: req.params.id }, 
+      data: {
+        ...rewardData,
+        image_url
+      } 
+    });
     return successResponse(res, reward, 'Reward updated successfully');
   } catch (error) {
     return next(error);

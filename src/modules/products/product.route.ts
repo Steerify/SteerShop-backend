@@ -14,7 +14,7 @@ router.get('/:id', productController.getProductById);
 
 // Protected routes
 router.post('/', authenticate, requireEntrepreneur, validate(createProductSchema), productController.createProduct);
-router.put('/:id', authenticate, validate(updateProductSchema), productController.updateProduct);
+router.patch('/:id', authenticate, validate(updateProductSchema), productController.updateProduct);
 router.delete('/:id', authenticate, productController.deleteProduct);
 
 export default router;

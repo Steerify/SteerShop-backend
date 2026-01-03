@@ -143,8 +143,8 @@ model Shop {
   name        String
   slug        String   @unique
   description String?
-  logo        String?
-  banner      String?
+  logo_url    String?
+  banner_url  String?
   phone       String?
   whatsapp    String?
   address     String?
@@ -350,7 +350,7 @@ model Course {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   description String?
-  thumbnail   String?
+  image_url   String?
   content     String?  // Could be markdown or HTML
   duration    String?  // e.g., "2 hours"
   level       String?  // Beginner, Intermediate, Advanced
@@ -366,7 +366,7 @@ model Reward {
   title       String
   description String?
   points      Int      @default(0)
-  image       String?
+  image_url   String?
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

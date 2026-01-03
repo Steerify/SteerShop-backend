@@ -31,16 +31,29 @@ router.get('/:id', async (req, res, next) => {
 // Admin routes
 router.post('/', authenticate, requireAdmin, async (req, res, next) => {
   try {
-    const course = await prisma.course.create({ data: req.body });
+    const { image_url, ...courseData } = req.body;
+    const course = await prisma.course.create({ 
+      data: {
+        ...courseData,
+        image_url
+      } 
+    });
     return successResponse(res, course, 'Course created successfully', 201);
   } catch (error) {
     return next(error);
   }
 });
 
-router.put('/:id', authenticate, requireAdmin, async (req, res, next) => {
+router.patch('/:id', authenticate, requireAdmin, async (req, res, next) => {
   try {
-    const course = await prisma.course.update({ where: { id: req.params.id }, data: req.body });
+    const { image_url, ...courseData } = req.body;
+    const course = await prisma.course.update({ 
+      where: { id: req.params.id }, 
+      data: {
+        ...courseData,
+        image_url
+      } 
+    });
     return successResponse(res, course, 'Course updated successfully');
   } catch (error) {
     return next(error);

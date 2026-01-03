@@ -83,6 +83,33 @@ Reset password with token.
 
 ---
 
+## Upload Endpoints
+
+### POST /upload
+Upload a file to Cloudinary (Authenticated).
+
+**Headers:**
+```
+Authorization: Bearer {accessToken}
+Content-Type: multipart/form-data
+```
+
+**Request Body:**
+- `file` (File): Image file to upload
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "File uploaded successfully",
+  "data": {
+    "url": "https://res.cloudinary.com/..."
+  }
+}
+```
+
+---
+
 ## Shop Endpoints
 
 ### POST /shops
@@ -99,11 +126,30 @@ Authorization: Bearer {accessToken}
   "name": "My Amazing Shop",
   "slug": "my-amazing-shop",
   "description": "Best products in Nigeria",
+  "logo_url": "https://res.cloudinary.com/...",
+  "banner_url": "https://res.cloudinary.com/...",
   "phone": "+2348012345678",
   "whatsapp": "+2348012345678",
   "address": "123 Main St",
   "city": "Lagos",
   "state": "Lagos"
+}
+```
+
+### PATCH /shops/:id
+Update shop details (Owner/Admin only).
+
+**Headers:**
+```
+Authorization: Bearer {accessToken}
+```
+
+**Request Body:**
+```json
+{
+  "name": "Updated Shop Name",
+  "logo_url": "https://res.cloudinary.com/...",
+  "banner_url": "https://res.cloudinary.com/..."
 }
 ```
 
@@ -168,6 +214,27 @@ List all products with filters.
 
 ### GET /products/:id
 Get product details with reviews and average rating.
+
+### PATCH /products/:id
+Update product details (Entrepreneur/Admin only).
+
+**Headers:**
+```
+Authorization: Bearer {accessToken}
+```
+
+**Request Body:**
+```json
+{
+  "name": "Updated Product Name",
+  "images": [
+    {
+      "url": "https://res.cloudinary.com/...",
+      "alt": "Updated image"
+    }
+  ]
+}
+```
 
 ---
 
@@ -372,14 +439,14 @@ Change user role.
 ### Courses
 - `GET /courses` - List published courses
 - `GET /courses/:id` - Get course details
-- `POST /courses` - Create course (Admin)
-- `PUT /courses/:id` - Update course (Admin)
+- `POST /courses` - Create course (Admin) - Body includes `image_url`
+- `PATCH /courses/:id` - Update course (Admin) - Body includes `image_url`
 - `DELETE /courses/:id` - Delete course (Admin)
 
 ### Rewards
 - `GET /rewards` - List active rewards
-- `POST /rewards` - Create reward (Admin)
-- `PUT /rewards/:id` - Update reward (Admin)
+- `POST /rewards/prizes` - Create prize (Admin) - Body includes `image_url`
+- `PATCH /rewards/prizes/:id` - Update prize (Admin) - Body includes `image_url`
 - `DELETE /rewards/:id` - Delete reward (Admin)
 
 ### Feedback
