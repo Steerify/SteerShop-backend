@@ -37,6 +37,13 @@ router.post('/', authenticate, (req: Request, res: Response, next: NextFunction)
       }
 
       if (!req.file) {
+        console.error('Upload debugging info:', {
+          headers: req.headers,
+          body: req.body,
+          file: (req as any).file,
+          files: (req as any).files,
+          contentType: req.headers['content-type'],
+        });
         throw new AppError('No file uploaded', 400);
       }
 
