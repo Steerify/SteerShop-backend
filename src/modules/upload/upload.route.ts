@@ -24,17 +24,28 @@ const upload = multer({
   },
 });
 
-router.post('/', authenticate, upload.single('file'), async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    if (!req.file) {
-      throw new AppError('No file uploaded', 400);
-    }
+router.post('/', authenticate, (req: Request, res: Response, next: NextFunction) => {
+  upload.single('file')(req, res, async (err: any) => {
+    try {
+      if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return next(new AppError('File size too large. maximum limit is 5MB', 400));
+        }
+        return next(new AppError(`File upload error: ${err.message}`, 400));
+      } else if (err) {
+        return next(err);
+      }
 
-    const url = await uploadService.uploadImage(req.file);
-    return successResponse(res, { url }, 'File uploaded successfully');
-  } catch (error) {
-    return next(error);
-  }
+      if (!req.file) {
+        throw new AppError('No file uploaded', 400);
+      }
+
+      const url = await uploadService.uploadImage(req.file);
+      return successResponse(res, { url }, 'File uploaded successfully');
+    } catch (error) {
+      return next(error);
+    }
+  });
 });
 
 export default router;

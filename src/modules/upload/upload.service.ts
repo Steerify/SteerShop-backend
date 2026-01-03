@@ -17,7 +17,8 @@ export class UploadService {
     if (!config.cloudinary.cloudName || !config.cloudinary.apiKey || !config.cloudinary.apiSecret) {
       // Fallback or development mock if credentials are missing
       console.warn('Cloudinary credentials missing. Returning local mock URL.');
-      return `https://res.cloudinary.com/steersolo/image/upload/v1/mock/${file.filename || 'placeholder'}`;
+      const fileName = file.originalname.split('.')[0];
+      return `https://res.cloudinary.com/steersolo/image/upload/v1/mock/${fileName}_${Date.now()}`;
     }
 
     return new Promise((resolve, reject) => {
@@ -28,13 +29,18 @@ export class UploadService {
         },
         (error, result) => {
           if (error) {
-            console.error('Cloudinary upload error:', error);
-            return reject(new AppError('Failed to upload image to Cloudinary', 500));
+            console.error('Cloudinary upload error:', {
+              message: error.message,
+              http_code: (error as any).http_code,
+              stack: error.stack
+            });
+            return reject(new AppError(`Cloudinary upload failed: ${error.message}`, 500));
           }
           if (result) {
             resolve(result.secure_url);
           } else {
-            reject(new AppError('Upload result is undefined', 500));
+            console.error('Cloudinary upload result is undefined');
+            reject(new AppError('Upload failed: Result undefined', 500));
           }
         }
       );
