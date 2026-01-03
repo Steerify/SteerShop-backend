@@ -42,12 +42,13 @@ export class PaymentService {
       method: 'POST',
       headers: paystackHeaders,
       body: JSON.stringify({
-        email: order.customer?.email || order.customerEmail,
-        amount: order.total, // Amount in kobo
+        email: order.customer?.email || (order as any).customerEmail,
+        amount: (order as any).total_amount, // Amount in kobo
         reference,
         metadata: {
           orderId: order.id,
           orderNumber: order.orderNumber,
+          deliveryAddress: `${order.deliveryAddress}, ${order.deliveryCity}, ${order.deliveryState}`,
         },
       }),
     });
@@ -60,16 +61,16 @@ export class PaymentService {
 
     // Create or update payment record
     const payment = await prisma.payment.upsert({
-      where: { orderId: order.id },
+      where: { orderId: (order as any).id },
       update: {
         reference,
-        amount: order.total,
+        amount: (order as any).total_amount,
         paystackResponse: result.data,
       },
       create: {
-        orderId: order.id,
+        orderId: (order as any).id,
         reference,
-        amount: order.total,
+        amount: (order as any).total_amount,
         paystackResponse: result.data,
       },
     });

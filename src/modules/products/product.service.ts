@@ -30,15 +30,23 @@ export class ProductService {
       throw new AppError('Product slug already exists in this shop', 409);
     }
 
-    const { images, ...productData } = data;
+    const { images } = data;
 
     const product = await prisma.product.create({
       data: {
-        ...productData,
+        name: data.name,
+        slug: data.slug,
+        description: data.description,
+        price: data.price,
+        compare_price: data.compare_price,
+        stock_quantity: data.stock_quantity,
+        type: data.type as any,
+        shopId: data.shopId,
+        categoryId: data.categoryId,
         images: images ? {
-          create: images,
+          create: images as any,
         } : undefined,
-      },
+      } as any,
       include: {
         images: true,
         category: true,
@@ -185,7 +193,7 @@ export class ProductService {
       throw new NotFoundError('Product not found');
     }
 
-    if (product.shop?.ownerId !== userId && userRole !== 'ADMIN') {
+    if ((product.shop as any)?.ownerId !== userId && userRole !== 'ADMIN') {
       throw new ForbiddenError('You do not have permission to update this product');
     }
 
@@ -194,10 +202,10 @@ export class ProductService {
     const updatedProduct = await prisma.product.update({
       where: { id: productId },
       data: {
-        ...productData,
+        ...(productData as any),
         images: images ? {
           deleteMany: {},
-          create: images,
+          create: images as any,
         } : undefined,
       },
       include: {

@@ -33,7 +33,21 @@ export class ShopService {
 
     const shop = await prisma.shop.create({
       data: {
-        ...data,
+        name: data.name,
+        slug: data.slug,
+        description: data.description,
+        logo_url: data.logo_url,
+        banner_url: data.banner_url,
+        phone: data.phone,
+        whatsapp: data.whatsapp,
+        address: data.address,
+        city: data.city,
+        state: data.state,
+        payment_method: data.payment_method,
+        bank_account_name: data.bank_account_name,
+        bank_name: data.bank_name,
+        bank_account_number: data.bank_account_number,
+        paystack_public_key: data.paystack_public_key,
         ownerId: userId,
         subscription: {
           create: {
@@ -42,14 +56,13 @@ export class ShopService {
             currentPeriodEnd,
           },
         },
-      },
+      } as any,
       include: {
         subscription: true,
         owner: {
           select: {
             id: true,
             email: true,
-            profile: true,
           },
         },
       },
@@ -142,7 +155,9 @@ export class ShopService {
 
     const updatedShop = await prisma.shop.update({
       where: { id: shopId },
-      data,
+      data: {
+        ...(data as any),
+      },
       include: {
         subscription: true,
       },

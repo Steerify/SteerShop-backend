@@ -47,6 +47,11 @@ enum FeedbackStatus {
   RESOLVED
 }
 
+enum ProductType {
+  PRODUCT
+  SERVICE
+}
+
 // ============================================
 // USER & AUTHENTICATION
 // ============================================
@@ -150,6 +155,14 @@ model Shop {
   address     String?
   city        String?
   state       String?
+  
+  // Payment Details
+  payment_method      String?  @default("bank_transfer") // "paystack", "bank_transfer", or "both"
+  bank_account_name   String?
+  bank_name           String?
+  bank_account_number String?
+  paystack_public_key String?
+
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -195,18 +208,19 @@ model Category {
 }
 
 model Product {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  shopId      String?  @db.ObjectId
-  categoryId  String?  @db.ObjectId
-  name        String
-  slug        String
-  description String?
-  price       Int      // Price in kobo (₦1 = 100 kobo)
-  comparePrice Int?    // Original price for discounts
-  inventory   Int      @default(0)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  shopId         String?  @db.ObjectId
+  categoryId     String?  @db.ObjectId
+  name           String
+  slug           String
+  description    String?
+  price          Int      // Price in kobo (₦1 = 100 kobo)
+  compare_price  Int?    // Original price for discounts
+  stock_quantity Int      @default(0)
+  type           ProductType @default(PRODUCT)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   shop      Shop?          @relation(fields: [shopId], references: [id], onDelete: Cascade)
   category  Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
@@ -246,7 +260,7 @@ model Order {
   status          OrderStatus @default(PENDING)
   subtotal        Int         // Amount in kobo
   deliveryFee     Int         @default(0)
-  total           Int         // Amount in kobo
+  total_amount    Int         // Amount in kobo
   customerName    String
   customerEmail   String
   customerPhone   String
@@ -331,19 +345,23 @@ model Review {
 // ============================================
 
 model Offer {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  title       String
-  description String?
-  image       String?
-  link        String?
-  startDate   DateTime
-  endDate     DateTime
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
+  title               String
+  description         String?
+  image_url           String?
+  code                String?
+  discount_percentage Int?
+  target_audience     String?
+  button_text         String?
+  button_link         String?
+  startDate           DateTime
+  valid_until         DateTime
+  isActive            Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
   @@index([isActive])
-  @@index([startDate, endDate])
+  @@index([startDate, valid_until])
 }
 
 model Course {
@@ -362,14 +380,15 @@ model Course {
 }
 
 model Reward {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  title       String
-  description String?
-  points      Int      @default(0)
-  image_url   String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  title           String
+  description     String?
+  points_required Int      @default(0)
+  image_url       String?
+  stock_quantity  Int      @default(0)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@index([isActive])
 }

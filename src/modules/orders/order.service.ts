@@ -30,14 +30,14 @@ export class OrderService {
       throw new AppError('Some products are not available', 400);
     }
 
-    // Check inventory
+    // Check stock_quantity
     for (const item of data.items) {
-      const product = products.find(p => p.id === item.productId);
+      const product = products.find(p => p.id === item.productId) as any;
       if (!product) {
         throw new AppError(`Product not found`, 400);
       }
-      if (product.inventory < item.quantity) {
-        throw new AppError(`Insufficient inventory for ${product.name}`, 400);
+      if (product.stock_quantity < item.quantity) {
+        throw new AppError(`Insufficient stock for ${product.name}`, 400);
       }
     }
 
@@ -56,7 +56,7 @@ export class OrderService {
       };
     });
 
-    const total = subtotal + data.deliveryFee;
+    const total_amount = subtotal + data.deliveryFee;
 
     // Generate order number
     const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
@@ -78,11 +78,11 @@ export class OrderService {
           deliveryFee: data.deliveryFee,
           notes: data.notes,
           subtotal,
-          total,
+          total_amount,
           items: {
             create: orderItems,
           },
-        },
+        } as any,
         include: {
           items: {
             include: {
@@ -93,15 +93,15 @@ export class OrderService {
         },
       });
 
-      // Update inventory
+      // Update stock_quantity
       for (const item of data.items) {
         await tx.product.update({
           where: { id: item.productId },
           data: {
-            inventory: {
+            stock_quantity: {
               decrement: item.quantity,
             },
-          },
+          } as any,
         });
       }
 
@@ -272,7 +272,7 @@ export class OrderService {
         quantity: item.quantity,
         price: item.price,
       })),
-      total: order.total,
+      total: (order as any).total_amount,
       deliveryAddress: `${order.deliveryAddress}, ${order.deliveryCity}, ${order.deliveryState}`,
     });
 

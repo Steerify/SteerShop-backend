@@ -15,6 +15,7 @@ export const createOrderSchema = z.object({
     deliveryCity: z.string().min(1),
     deliveryState: z.string().min(1),
     deliveryFee: z.number().int().min(0).default(0),
+    total_amount: z.number().int().min(0).optional(),
     notes: z.string().optional(),
   }),
 });

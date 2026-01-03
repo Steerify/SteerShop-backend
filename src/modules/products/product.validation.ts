@@ -8,8 +8,9 @@ export const createProductSchema = z.object({
     slug: z.string().min(3).regex(/^[a-z0-9-]+$/),
     description: z.string().optional(),
     price: z.number().int().positive('Price must be positive'),
-    comparePrice: z.number().int().positive().optional(),
-    inventory: z.number().int().min(0).default(0),
+    compare_price: z.number().int().positive().optional(),
+    stock_quantity: z.number().int().min(0).default(0),
+    type: z.enum(['PRODUCT', 'SERVICE']).default('PRODUCT'),
     images: z.array(z.object({
       url: z.string().url(),
       alt: z.string().optional(),
@@ -24,8 +25,9 @@ export const updateProductSchema = z.object({
     name: z.string().min(3).optional(),
     description: z.string().optional(),
     price: z.number().int().positive().optional(),
-    comparePrice: z.number().int().positive().optional(),
-    inventory: z.number().int().min(0).optional(),
+    compare_price: z.number().int().positive().optional(),
+    stock_quantity: z.number().int().min(0).optional(),
+    type: z.enum(['PRODUCT', 'SERVICE']).optional(),
     images: z.array(z.object({
       url: z.string().url(),
       alt: z.string().optional(),

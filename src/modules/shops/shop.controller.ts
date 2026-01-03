@@ -1,13 +1,32 @@
 import { Request, Response, NextFunction } from 'express';
 import { ShopService } from './shop.service';
+import { UploadService } from '../upload/upload.service';
 import { successResponse, paginatedResponse } from '../../utils/response';
 import { parsePaginationParams } from '../../utils/pagination';
 
 const shopService = new ShopService();
+const uploadService = new UploadService();
 
 export class ShopController {
+  private async handleImageUploads(req: Request) {
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
+    
+    if (!files) return;
+
+    if (files.logo && files.logo[0]) {
+      const logoUrl = await uploadService.uploadImage(files.logo[0]);
+      req.body.logo_url = logoUrl;
+    }
+
+    if (files.banner && files.banner[0]) {
+      const bannerUrl = await uploadService.uploadImage(files.banner[0]);
+      req.body.banner_url = bannerUrl;
+    }
+  }
+
   async createShop(req: Request, res: Response, next: NextFunction) {
     try {
+      await this.handleImageUploads(req);
       const shop = await shopService.createShop(req.user!.id, req.body);
       return successResponse(res, shop, 'Shop created successfully', 201);
     } catch (error) {
@@ -37,6 +56,7 @@ export class ShopController {
 
   async updateShop(req: Request, res: Response, next: NextFunction) {
     try {
+      await this.handleImageUploads(req);
       const shop = await shopService.updateShop(
         req.params.id,
         req.user!.id,

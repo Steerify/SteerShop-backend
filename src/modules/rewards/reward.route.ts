@@ -11,7 +11,7 @@ router.get('/', async (_req, res, next) => {
   try {
     const rewards = await prisma.reward.findMany({
       where: { isActive: true },
-      orderBy: { points: 'asc' },
+      orderBy: { points_required: 'asc' } as any,
     });
     return successResponse(res, rewards, 'Rewards retrieved successfully');
   } catch (error) {
