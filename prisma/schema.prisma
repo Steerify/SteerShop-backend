@@ -57,43 +57,43 @@ enum ProductType {
 // ============================================
 
 model User {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  email     String   @unique
-  password  String?
-  googleId  String?  @unique
-  provider  String   @default("local")
-  role      Role     @default(CUSTOMER)
-  isVerified Boolean @default(false)
-  isActive  Boolean  @default(true)
-  onboardingCompleted Boolean @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
+  email               String   @unique
+  password            String?
+  googleId            String?  @unique
+  provider            String   @default("local")
+  role                Role     @default(CUSTOMER)
+  isVerified          Boolean  @default(false)
+  isActive            Boolean  @default(true)
+  onboardingCompleted Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
-  profile       Profile?
-  shop          Shop?
-  orders        Order[]
-  reviews       Review[]
-  refreshTokens RefreshToken[]
-  passwordResets PasswordReset[]
-  feedback      Feedback[]
+  profile            Profile?
+  shop               Shop?
+  orders             Order[]
+  reviews            Review[]
+  refreshTokens      RefreshToken[]
+  passwordResets     PasswordReset[]
+  feedback           Feedback[]
   onboardingResponse OnboardingResponse?
 
   @@index([role])
 }
 
 model Profile {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String   @unique @db.ObjectId
-  firstName   String?
-  lastName    String?
-  phone       String?
-  address     String?
-  city        String?
-  state       String?
-  country     String   @default("Nigeria")
-  avatar      String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @unique @db.ObjectId
+  firstName String?
+  lastName  String?
+  phone     String?
+  address   String?
+  city      String?
+  state     String?
+  country   String   @default("Nigeria")
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -137,16 +137,15 @@ model OnboardingResponse {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-
 // ============================================
 // SHOP & SUBSCRIPTION
 // ============================================
 
 model Shop {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  ownerId     String?  @unique @db.ObjectId
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  ownerId     String? @unique @db.ObjectId
   name        String
-  slug        String   @unique
+  slug        String  @unique
   description String?
   logo_url    String?
   banner_url  String?
@@ -155,38 +154,56 @@ model Shop {
   address     String?
   city        String?
   state       String?
-  
+
   // Payment Details
-  payment_method      String?  @default("bank_transfer") // "paystack", "bank_transfer", or "both"
+  payment_method      String? @default("bank_transfer") // "paystack", "bank_transfer", or "both"
   bank_account_name   String?
   bank_name           String?
   bank_account_number String?
   paystack_public_key String?
 
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  owner        User?         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  products     Product[]
-  orders       Order[]
-  subscription Subscription?
+  owner              User?                @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  products           Product[]
+  orders             Order[]
+  subscription       Subscription?
+  RevenueTransaction RevenueTransaction[]
 
   @@index([isActive])
 }
 
 model Subscription {
-  id        String             @id @default(auto()) @map("_id") @db.ObjectId
-  shopId    String?            @unique @db.ObjectId
-  status    SubscriptionStatus @default(TRIAL)
-  trialEndsAt DateTime?
-  currentPeriodStart DateTime @default(now())
+  id                 String             @id @default(auto()) @map("_id") @db.ObjectId
+  shopId             String?            @unique @db.ObjectId
+  status             SubscriptionStatus @default(TRIAL)
+  trialEndsAt        DateTime?
+  currentPeriodStart DateTime           @default(now())
   currentPeriodEnd   DateTime
-  amount    Int                @default(100000) // ₦1,000 in kobo
-  createdAt DateTime           @default(now())
-  updatedAt DateTime           @updatedAt
+  amount             Int                @default(100000) // ₦1,000 in kobo
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
 
-  shop Shop? @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shop                Shop?                 @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  SubscriptionPayment SubscriptionPayment[]
+
+  @@index([status])
+}
+
+model SubscriptionPayment {
+  id               String        @id @default(auto()) @map("_id") @db.ObjectId
+  subscriptionId   String        @db.ObjectId
+  reference        String        @unique
+  amount           Int // Amount in kobo
+  status           PaymentStatus @default(PENDING)
+  paystackResponse Json?
+  paidAt           DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
 
   @@index([status])
 }
@@ -196,37 +213,37 @@ model Subscription {
 // ============================================
 
 model Category {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  name        String    @unique
-  slug        String    @unique
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String   @unique
+  slug        String   @unique
   description String?
   icon        String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   products Product[]
 }
 
 model Product {
-  id             String   @id @default(auto()) @map("_id") @db.ObjectId
-  shopId         String?  @db.ObjectId
-  categoryId     String?  @db.ObjectId
+  id             String      @id @default(auto()) @map("_id") @db.ObjectId
+  shopId         String?     @db.ObjectId
+  categoryId     String?     @db.ObjectId
   name           String
   slug           String
   description    String?
-  price          Int      // Price in kobo (₦1 = 100 kobo)
-  compare_price  Int?    // Original price for discounts
-  stock_quantity Int      @default(0)
+  price          Int // Price in kobo (₦1 = 100 kobo)
+  compare_price  Int? // Original price for discounts
+  stock_quantity Int         @default(0)
   type           ProductType @default(PRODUCT)
-  isActive       Boolean  @default(true)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  isActive       Boolean     @default(true)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
 
-  shop      Shop?          @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  category  Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  images    ProductImage[]
+  shop       Shop?          @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  category   Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  images     ProductImage[]
   orderItems OrderItem[]
-  reviews   Review[]
+  reviews    Review[]
 
   @@unique([shopId, slug])
   @@index([shopId])
@@ -258,9 +275,9 @@ model Order {
   customerId      String?     @db.ObjectId
   shopId          String      @db.ObjectId
   status          OrderStatus @default(PENDING)
-  subtotal        Int         // Amount in kobo
+  subtotal        Int // Amount in kobo
   deliveryFee     Int         @default(0)
-  total_amount    Int         // Amount in kobo
+  total_amount    Int // Amount in kobo
   customerName    String
   customerEmail   String
   customerPhone   String
@@ -287,8 +304,8 @@ model OrderItem {
   orderId   String   @db.ObjectId
   productId String   @db.ObjectId
   quantity  Int
-  price     Int      // Price at time of order in kobo
-  total     Int      // quantity * price
+  price     Int // Price at time of order in kobo
+  total     Int // quantity * price
   createdAt DateTime @default(now())
 
   order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
@@ -303,19 +320,39 @@ model OrderItem {
 // ============================================
 
 model Payment {
-  id              String        @id @default(auto()) @map("_id") @db.ObjectId
-  orderId         String        @unique @db.ObjectId
-  reference       String        @unique
-  amount          Int           // Amount in kobo
-  status          PaymentStatus @default(PENDING)
+  id               String        @id @default(auto()) @map("_id") @db.ObjectId
+  orderId          String        @unique @db.ObjectId
+  reference        String        @unique
+  amount           Int // Amount in kobo
+  status           PaymentStatus @default(PENDING)
   paystackResponse Json?
-  paidAt          DateTime?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  paidAt           DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([status])
+}
+
+model RevenueTransaction {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  shopId            String?  @db.ObjectId
+  orderId           String?  @db.ObjectId
+  subscriptionId    String?  @db.ObjectId
+  amount            Int
+  currency          String   @default("NGN")
+  payment_reference String?
+  payment_method    String?
+  transaction_type  String?
+  metadata          Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  shop Shop? @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@index([shopId])
+  @@index([orderId])
 }
 
 // ============================================
@@ -326,7 +363,7 @@ model Review {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
   productId  String   @db.ObjectId
   customerId String   @db.ObjectId
-  rating     Int      // 1-5
+  rating     Int // 1-5
   comment    String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -364,14 +401,32 @@ model Offer {
   @@index([startDate, valid_until])
 }
 
+model DeadLetter {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  queue       String
+  event       String?
+  reference   String?
+  payload     Json
+  signature   String?
+  error       String?
+  attempts    Int       @default(0)
+  lastErrorAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([attempts])
+  @@index([createdAt])
+  @@index([reference])
+}
+
 model Course {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   description String?
   image_url   String?
-  content     String?  // Could be markdown or HTML
-  duration    String?  // e.g., "2 hours"
-  level       String?  // Beginner, Intermediate, Advanced
+  content     String? // Could be markdown or HTML
+  duration    String? // e.g., "2 hours"
+  level       String? // Beginner, Intermediate, Advanced
   isPublished Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

@@ -5,9 +5,11 @@ Base URL: `http://localhost:5000/api/v1`
 ## Authentication Endpoints
 
 ### POST /auth/signup
+
 Create a new user account.
 
 **Request Body:**
+
 ```json
 {
   "email": "user@example.com",
@@ -20,6 +22,7 @@ Create a new user account.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -40,9 +43,11 @@ Create a new user account.
 ```
 
 ### POST /auth/login
+
 Login to existing account.
 
 **Request Body:**
+
 ```json
 {
   "email": "user@example.com",
@@ -51,9 +56,11 @@ Login to existing account.
 ```
 
 ### POST /auth/refresh
+
 Refresh access token.
 
 **Request Body:**
+
 ```json
 {
   "refreshToken": "jwt-refresh-token"
@@ -61,9 +68,11 @@ Refresh access token.
 ```
 
 ### POST /auth/forgot-password
+
 Request password reset.
 
 **Request Body:**
+
 ```json
 {
   "email": "user@example.com"
@@ -71,9 +80,11 @@ Request password reset.
 ```
 
 ### POST /auth/reset-password
+
 Reset password with token.
 
 **Request Body:**
+
 ```json
 {
   "token": "reset-token",
@@ -86,18 +97,22 @@ Reset password with token.
 ## Upload Endpoints
 
 ### POST /upload
+
 Upload a file to Cloudinary (Authenticated).
 
 **Headers:**
+
 ```
 Authorization: Bearer {accessToken}
 Content-Type: multipart/form-data
 ```
 
 **Request Body:**
+
 - `file` (File): Image file to upload
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -113,14 +128,17 @@ Content-Type: multipart/form-data
 ## Shop Endpoints
 
 ### POST /shops
+
 Create a new shop (Entrepreneur only).
 
 **Headers:**
+
 ```
 Authorization: Bearer {accessToken}
 ```
 
 **Request Body:**
+
 ```json
 {
   "name": "My Amazing Shop",
@@ -137,14 +155,17 @@ Authorization: Bearer {accessToken}
 ```
 
 ### PATCH /shops/:id
+
 Update shop details (Owner/Admin only).
 
 **Headers:**
+
 ```
 Authorization: Bearer {accessToken}
 ```
 
 **Request Body:**
+
 ```json
 {
   "name": "Updated Shop Name",
@@ -154,29 +175,39 @@ Authorization: Bearer {accessToken}
 ```
 
 ### GET /shops
+
 List all shops.
 
 **Query Parameters:**
+
 - `page` (number): Page number (default: 1)
 - `limit` (number): Items per page (default: 10)
 - `isActive` (boolean): Filter by active status
 
 ### GET /shops/:slug
+
 Get shop by slug.
+
+### GET /shops/me
+
+Get the authenticated user's shop (requires Authorization header).
 
 ---
 
 ## Product Endpoints
 
 ### POST /products
+
 Create a new product (Entrepreneur only).
 
 **Headers:**
+
 ```
 Authorization: Bearer {accessToken}
 ```
 
 **Request Body:**
+
 ```json
 {
   "shopId": "shop-uuid",
@@ -200,9 +231,11 @@ Authorization: Bearer {accessToken}
 **Note:** Price is in kobo (₦5,000 = 500000 kobo)
 
 ### GET /products
+
 List all products with filters.
 
 **Query Parameters:**
+
 - `page` (number)
 - `limit` (number)
 - `shopId` (string)
@@ -213,17 +246,21 @@ List all products with filters.
 - `isActive` (boolean)
 
 ### GET /products/:id
+
 Get product details with reviews and average rating.
 
 ### PATCH /products/:id
+
 Update product details (Entrepreneur/Admin only).
 
 **Headers:**
+
 ```
 Authorization: Bearer {accessToken}
 ```
 
 **Request Body:**
+
 ```json
 {
   "name": "Updated Product Name",
@@ -241,14 +278,17 @@ Authorization: Bearer {accessToken}
 ## Order Endpoints
 
 ### POST /orders
+
 Create a new order.
 
 **Headers:**
+
 ```
 Authorization: Bearer {accessToken}
 ```
 
 **Request Body:**
+
 ```json
 {
   "shopId": "shop-uuid",
@@ -270,21 +310,26 @@ Authorization: Bearer {accessToken}
 ```
 
 ### GET /orders
+
 List orders (filtered by user role).
 
 **Query Parameters:**
+
 - `page` (number)
 - `limit` (number)
 - `shopId` (string)
 - `status` (string): PENDING, PROCESSING, SHIPPED, DELIVERED, CANCELLED
 
 ### GET /orders/:id
+
 Get order details.
 
 ### PATCH /orders/:id/status
+
 Update order status (Entrepreneur/Admin only).
 
 **Request Body:**
+
 ```json
 {
   "status": "PROCESSING"
@@ -292,9 +337,11 @@ Update order status (Entrepreneur/Admin only).
 ```
 
 ### GET /orders/:id/whatsapp-link
+
 Generate WhatsApp link for order.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -310,14 +357,17 @@ Generate WhatsApp link for order.
 ## Payment Endpoints
 
 ### POST /payments/initialize
+
 Initialize Paystack payment.
 
 **Headers:**
+
 ```
 Authorization: Bearer {accessToken}
 ```
 
 **Request Body:**
+
 ```json
 {
   "orderId": "order-uuid"
@@ -325,6 +375,7 @@ Authorization: Bearer {accessToken}
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -338,12 +389,19 @@ Authorization: Bearer {accessToken}
 ```
 
 ### GET /payments/verify/:reference
+
 Verify payment status.
 
 ### POST /payments/webhook
-Paystack webhook endpoint (no authentication required).
+
+Paystack webhook endpoint (no authentication required). Handles incoming Paystack events (e.g., charge.success) to:
+
+- Mark order payments as successful and update order status
+- Create revenue transaction records for orders and subscriptions
+- Activate or extend `Subscription` periods when subscription payments succeed
 
 **Headers:**
+
 ```
 x-paystack-signature: signature-hash
 ```
@@ -353,14 +411,17 @@ x-paystack-signature: signature-hash
 ## Review Endpoints
 
 ### POST /reviews
+
 Create a product review.
 
 **Headers:**
+
 ```
 Authorization: Bearer {accessToken}
 ```
 
 **Request Body:**
+
 ```json
 {
   "productId": "product-uuid",
@@ -370,9 +431,11 @@ Authorization: Bearer {accessToken}
 ```
 
 ### GET /reviews/product/:productId
+
 Get all reviews for a product.
 
 **Query Parameters:**
+
 - `page` (number)
 - `limit` (number)
 
@@ -385,9 +448,11 @@ Get all reviews for a product.
 All admin endpoints require Admin role.
 
 ### GET /admin/analytics
+
 Get platform analytics.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -405,21 +470,27 @@ Get platform analytics.
 ```
 
 ### GET /admin/users
+
 List all users with pagination.
 
 ### GET /admin/shops
+
 List all shops with pagination.
 
 ### GET /admin/orders
+
 List all orders with pagination.
 
 ### GET /admin/products
+
 List all products with pagination.
 
 ### PATCH /admin/users/:id/role
+
 Change user role.
 
 **Request Body:**
+
 ```json
 {
   "role": "ENTREPRENEUR"
@@ -431,12 +502,45 @@ Change user role.
 ## Additional Endpoints
 
 ### Offers
+
+## Subscriptions
+
+### POST /subscriptions/initialize
+
+Initialize a subscription payment for the authenticated user's shop. Creates a Paystack transaction and returns the authorization URL.
+
+**Headers:**
+
+```
+Authorization: Bearer {accessToken}
+```
+
+**Response:**
+
+```json
+{
+  "authorizationUrl": "https://checkout.paystack.com/...",
+  "reference": "SUB-..."
+}
+```
+
+### GET /subscriptions/me
+
+Get the current subscription for the authenticated user's shop.
+
+**Headers:**
+
+```
+Authorization: Bearer {accessToken}
+```
+
 - `GET /offers` - List active offers
 - `POST /offers` - Create offer (Admin)
 - `PUT /offers/:id` - Update offer (Admin)
 - `DELETE /offers/:id` - Delete offer (Admin)
 
 ### Courses
+
 - `GET /courses` - List published courses
 - `GET /courses/:id` - Get course details
 - `POST /courses` - Create course (Admin) - Body includes `image_url`
@@ -444,12 +548,14 @@ Change user role.
 - `DELETE /courses/:id` - Delete course (Admin)
 
 ### Rewards
+
 - `GET /rewards` - List active rewards
 - `POST /rewards/prizes` - Create prize (Admin) - Body includes `image_url`
 - `PATCH /rewards/prizes/:id` - Update prize (Admin) - Body includes `image_url`
 - `DELETE /rewards/:id` - Delete reward (Admin)
 
 ### Feedback
+
 - `POST /feedback` - Submit feedback (Authenticated)
 - `GET /feedback` - List all feedback (Admin)
 - `PATCH /feedback/:id/status` - Update feedback status (Admin)
@@ -461,6 +567,7 @@ Change user role.
 All responses follow this format:
 
 **Success:**
+
 ```json
 {
   "success": true,
@@ -470,6 +577,7 @@ All responses follow this format:
 ```
 
 **Error:**
+
 ```json
 {
   "success": false,
@@ -479,6 +587,7 @@ All responses follow this format:
 ```
 
 **Paginated:**
+
 ```json
 {
   "success": true,
