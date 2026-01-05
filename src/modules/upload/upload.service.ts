@@ -13,38 +13,64 @@ export class UploadService {
     }
   }
 
-  async uploadImage(file: Express.Multer.File): Promise<string> {
+  async uploadImage(file: Express.Multer.File, folder: string = 'steersolo'): Promise<string> {
+    console.log('Uploading to Cloudinary:', {
+      cloudName: config.cloudinary.cloudName,
+      hasCredentials: !!(config.cloudinary.apiKey && config.cloudinary.apiSecret),
+      fileName: file.originalname,
+      fileSize: file.size,
+      folder,
+    });
+
     if (!config.cloudinary.cloudName || !config.cloudinary.apiKey || !config.cloudinary.apiSecret) {
       // Fallback or development mock if credentials are missing
-      console.warn('Cloudinary credentials missing. Returning local mock URL.');
+      console.warn('Cloudinary credentials missing. Returning mock URL.');
       const fileName = file.originalname.split('.')[0];
-      return `https://res.cloudinary.com/steersolo/image/upload/v1/mock/${fileName}_${Date.now()}`;
+      return `https://res.cloudinary.com/steersolo/image/upload/v1/${folder}/${fileName}_${Date.now()}`;
     }
 
     return new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
-          folder: 'steersolo',
+          folder: folder, // Use the folder parameter
           resource_type: 'auto',
+          allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'gif'],
+          timeout: 60000, // 60 second timeout
         },
         (error, result) => {
           if (error) {
-            console.error('Cloudinary upload error:', {
+            console.error('Cloudinary upload error details:', {
               message: error.message,
               http_code: (error as any).http_code,
-              stack: error.stack
+              name: error.name,
+              folder,
             });
-            return reject(new AppError(`Cloudinary upload failed: ${error.message}`, 500));
+            return reject(new AppError(`Upload failed: ${error.message}`, 500));
           }
-          if (result) {
+          
+          if (result && result.secure_url) {
+            console.log('Cloudinary upload successful:', {
+              url: result.secure_url,
+              publicId: result.public_id,
+              folder,
+              format: result.format,
+              size: result.bytes,
+            });
             resolve(result.secure_url);
           } else {
-            console.error('Cloudinary upload result is undefined');
-            reject(new AppError('Upload failed: Result undefined', 500));
+            console.error('Cloudinary upload result is undefined or missing URL:', result);
+            reject(new AppError('Upload failed: No URL returned', 500));
           }
         }
       );
 
+      // Add error handler for the stream
+      uploadStream.on('error', (error) => {
+        console.error('Upload stream error:', error);
+        reject(new AppError(`Stream error: ${error.message}`, 500));
+      });
+
+      // Write the file buffer to the stream
       uploadStream.end(file.buffer);
     });
   }

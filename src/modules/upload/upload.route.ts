@@ -24,35 +24,61 @@ const upload = multer({
   },
 });
 
-router.post('/', authenticate, (req: Request, res: Response, next: NextFunction) => {
-  upload.single('image')(req, res, async (err: any) => {
-    try {
-      if (err instanceof multer.MulterError) {
-        if (err.code === 'LIMIT_FILE_SIZE') {
-          return next(new AppError('File size too large. maximum limit is 5MB', 400));
-        }
-        return next(new AppError(`File upload error: ${err.message}`, 400));
-      } else if (err) {
-        return next(err);
+// IMPORTANT: Fix the route handler - remove the immediate function wrapper
+router.post('/', authenticate, upload.single('image'), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    console.log('Upload request received:', {
+      hasFile: !!req.file,
+      fileInfo: req.file ? {
+        originalname: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size,
+      } : null,
+      body: req.body,
+      headers: {
+        'content-type': req.headers['content-type'],
+        authorization: req.headers.authorization ? 'present' : 'missing',
       }
+    });
 
-      if (!req.file) {
-        console.error('Upload debugging info:', {
-          headers: req.headers,
-          body: req.body,
-          file: (req as any).file,
-          files: (req as any).files,
-          contentType: req.headers['content-type'],
-        });
-        throw new AppError('No file uploaded', 400);
-      }
-
-      const url = await uploadService.uploadImage(req.file);
-      return successResponse(res, { url }, 'File uploaded successfully');
-    } catch (error) {
-      return next(error);
+    if (!req.file) {
+      console.error('No file in request:', {
+        bodyKeys: Object.keys(req.body),
+        files: (req as any).files,
+      });
+      throw new AppError('No file uploaded. Please select an image file.', 400);
     }
-  });
+
+    // Get folder from request body (if provided)
+    const folder = req.body.folder || 'steersolo';
+    console.log('Uploading to folder:', folder);
+
+    // Pass folder to upload service (update your UploadService to accept folder)
+    const url = await uploadService.uploadImage(req.file, folder);
+    
+    console.log('Upload successful:', url);
+    
+    return successResponse(res, { url }, 'File uploaded successfully');
+  } catch (error) {
+    console.error('Upload route error:', error);
+    return next(error);
+  }
+});
+
+// Add CORS headers if needed (especially for development)
+router.use((req: Request, res: Response, next: NextFunction) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  next();
+});
+
+// Add OPTIONS handler for preflight requests
+router.options('/', (req: Request, res: Response) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.status(200).end();
 });
 
 export default router;
