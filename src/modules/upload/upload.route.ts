@@ -66,7 +66,7 @@ router.post('/', authenticate, upload.single('image'), async (req: Request, res:
 });
 
 // Add CORS headers if needed (especially for development)
-router.use((req: Request, res: Response, next: NextFunction) => {
+router.use((_req: Request, res: Response, next: NextFunction) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
