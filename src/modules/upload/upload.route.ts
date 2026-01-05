@@ -74,7 +74,7 @@ router.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 // Add OPTIONS handler for preflight requests
-router.options('/', (req: Request, res: Response) => {
+router.options('/', (_req: Request, res: Response) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
